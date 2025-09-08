@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Experiments Explorer</title>
+  <meta name="description" content="Pick an experiment and see what happens! A lightweight, GitHub Pages–ready site." />
+  <style>
+    :root{
+      --bg: #0b1020;
+      --panel: #121935;
+      --accent: #7c9cff;
+      --accent-2: #55e6c1;
+      --text: #e8ecff;
+      --muted: #a8b0d6;
+      --ring: rgba(124,156,255,.35);
+      --danger: #ff6b6b;
+      --warn: #ffd166;
+    }
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg: #f7f8ff;
+        --panel: #ffffff;
+        --accent: #3b5bdb;
+        --accent-2: #189e82;
+        --text: #0c1222;
+        --muted: #536185;
+        --ring: rgba(59,91,219,.2);
+        --danger: #d32f2f;
+        --warn: #b58800;
+      }
+    }
+
+    *{ box-sizing: border-box; }
+    html, body { height: 100%; }
+    body{
+      margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: var(--text); background: radial-gradient(1200px 800px at 80% -10%, rgba(124,156,255,.1), transparent 40%),
+              radial-gradient(900px 700px at -10% 110%, rgba(85,230,193,.08), transparent 35%), var(--bg);
+    }
+    header{
+      position: sticky; top:0; z-index:5;
+      display:flex; align-items:center; gap:.75rem; padding: .9rem 1rem; 
+      border-bottom: 1px solid rgba(124,156,255,.15); backdrop-filter: blur(8px);
+      background: linear-gradient(180deg, rgba(10,14,32,.75), rgba(10,14,32,.55));
+    }
+    header h1{ font-size:1.1rem; margin:0; letter-spacing:.3px; }
+    .tag{ font-size:.75rem; padding:.2rem .45rem; border-radius:999px; background: rgba(124,156,255,.15); color: var(--accent); }
+    .wrap{ display:grid; grid-template-columns: 320px 1fr; gap:1rem; padding:1rem; max-width:1200px; margin:0 auto; }
+    aside{
+      background: var(--panel); border:1px solid rgba(124,156,255,.15); border-radius: 16px; overflow:hidden;
+    }
+    main{
+      min-height: 70vh;
+      background: var(--panel); border:1px solid rgba(124,156,255,.15); border-radius: 16px; padding: 1rem; 
+    }
+
+    /* Sidebar */
+    .sidebar-head{ display:flex; align-items:center; gap:.6rem; padding:.9rem .9rem .6rem; border-bottom:1px solid rgba(124,156,255,.12); }
+    .sidebar-head svg{ width:22px; height:22px; opacity:.9; }
+    .search{
+      position:relative; padding:.75rem .75rem 1rem; border-bottom:1px solid rgba(124,156,255,.12);
+    }
+    .search input{
+      width:100%; padding:.7rem .9rem .7rem 2.2rem; border-radius:12px; border:1px solid rgba(124,156,255,.25);
+      outline:none; background: rgba(124,156,255,.06); color:var(--text);
+    }
+    .search svg{ position:absolute; left:1.2rem; top:50%; transform:translateY(-5%); width:18px; height:18px; opacity:.7; }
+    .filters{ display:flex; gap:.4rem; padding:.5rem .75rem .8rem; flex-wrap: wrap; }
+    .chip{ border:1px solid rgba(124,156,255,.25); background: rgba(124,156,255,.06); color: var(--muted); padding:.35rem .6rem; border-radius:999px; cursor:pointer; font-size:.78rem; }
+    .chip.active{ color: var(--accent); border-color: var(--accent); box-shadow:0 0 0 3px var(--ring); }
+    .list{ max-height: calc(100dvh - 260px); overflow:auto; padding:.25rem; }
+    .exp-item{ display:flex; gap:.75rem; padding:.7rem .75rem; border-radius: 12px; cursor:pointer; border:1px solid transparent; }
+    .exp-item:hover{ background: rgba(124,156,255,.08); border-color: rgba(124,156,255,.15); }
+    .exp-item.active{ background: rgba(124,156,255,.12); border-color: var(--accent); box-shadow:0 0 0 3px var(--ring); }
+    .exp-item h4{ margin:0; font-size:.98rem; }
+    .meta{ font-size:.75rem; color: var(--muted); display:flex; gap:.75rem; }
+
+    /* Main content */
+    .hero{ padding:.5rem .5rem 1rem; border-bottom:1px solid rgba(124,156,255,.12); }
+    .hero h2{ margin:.2rem 0 .4rem; font-size:1.35rem; }
+    .badges{ display:flex; gap:.5rem; flex-wrap:wrap; }
+    .badge{ font-size:.72rem; background: rgba(124,156,255,.12); border:1px solid rgba(124,156,255,.25); padding:.25rem .5rem; border-radius:8px; color: var(--muted); }
+    .grid{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; padding:1rem .5rem; }
+    .card{ background: linear-gradient(180deg, rgba(255,255,255,.012), rgba(255,255,255,.004)); border:1px solid rgba(124,156,255,.15); border-radius:14px; padding: .9rem; }
+    .card h3{ margin:.1rem 0 .6rem; font-size:1rem; }
+    ol, ul{ margin:.1rem 0 .25rem .9rem; }
+    .muted{ color: var(--muted); }
+
+    .run-bar{ display:flex; gap:.6rem; padding:.35rem; background: rgba(124,156,255,.07); border:1px dashed rgba(124,156,255,.3); border-radius: 12px; align-items:center; }
+    .run-bar button{
+      appearance:none; border:none; background: var(--accent); color:white; font-weight:600; padding:.6rem .9rem; border-radius:10px; cursor:pointer;
+      transition: transform .05s ease-in-out, box-shadow .15s ease; box-shadow: 0 6px 20px rgba(124,156,255,.25);
+    }
+    .run-bar button:active{ transform: translateY(1px); }
+    .run-bar select{ padding:.5rem .6rem; border-radius:8px; background: rgba(124,156,255,.1); color:var(--text); border:1px solid rgba(124,156,255,.25) }
+
+    .result{ margin-top:.75rem; padding:.9rem; border-radius:12px; border:1px solid rgba(124,156,255,.2); background: rgba(124,156,255,.08); display:none; }
+    .result.show{ display:block; animation: pop .18s ease-out; }
+    @keyframes pop{ from{ transform: scale(.98); opacity:.6 } to{ transform: scale(1); opacity:1 } }
+
+    .footer{ padding: .75rem .5rem; color: var(--muted); font-size:.85rem; border-top:1px solid rgba(124,156,255,.12); display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
+
+    @media (max-width: 900px){ .wrap{ grid-template-columns: 1fr; } .list{ max-height: 50vh; } }
+  </style>
+</head>
+<body>
+  <header>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3h18v6H3z"/><path d="M9 9v12M15 9v12"/><path d="M3 15h18"/></svg>
+    <h1>Experiments Explorer</h1>
+    <span class="tag">GitHub Pages ready</span>
+  </header>
+
+  <div class="wrap">
+    <aside>
+      <div class="sidebar-head">
+        <strong>Experiments</strong>
+        <span class="muted" id="count"></span>
+      </div>
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Search by name, level, tag…" />
+      </div>
+      <div class="filters" id="filters"></div>
+      <div class="list" id="list"></div>
+    </aside>
+
+    <main>
+      <section class="hero">
+        <h2 id="title">Pick an experiment to begin</h2>
+        <div class="badges" id="badges"></div>
+        <p class="muted" id="summary">Browse the list on the left, then click <em>Run Experiment</em> to see the typical results. Everything here is static and safe for GitHub Pages—no build tools or external libraries needed.</p>
+      </section>
+
+      <div class="grid">
+        <article class="card">
+          <h3>Materials</h3>
+          <ul id="materials"><li class="muted">—</li></ul>
+        </article>
+        <article class="card">
+          <h3>Safety & Notes</h3>
+          <ul id="safety"><li class="muted">—</li></ul>
+        </article>
+        <article class="card" style="grid-column: 1/-1;">
+          <h3>Procedure</h3>
+          <ol id="steps"><li class="muted">—</li></ol>
+        </article>
+        <article class="card" style="grid-column: 1/-1;">
+          <div class="run-bar">
+            <button id="runBtn" disabled>Run Experiment</button>
+            <select id="setting">
+              <option value="baseline" selected>Baseline</option>
+              <option value="less">Use less reagent</option>
+              <option value="more">Use more reagent</option>
+              <option value="temp">Warmer temperature</option>
+            </select>
+            <span class="muted">Change variables, then run to see typical outcomes.</span>
+          </div>
+          <div class="result" id="result"></div>
+        </article>
+      </div>
+
+      <div class="footer">
+        <div>Made with plain HTML, CSS & JS. Drop this file into your <code>username.github.io</code> repo.</div>
+        <div>
+          <a class="muted" href="#" id="share">Copy link to this experiment</a>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ---- Data: add/edit experiments here ----
+    // Minimal schema per item: id, name, level, time, tags[], summary, materials[], safety[], steps[], outcomes: {baseline, less, more, temp}
+    const experiments = [
+      {
+        id: 'toothpaste',
+        name: 'Elephant Toothpaste (Foam Decomposition)',
+        level: 'Intro',
+        time: '10 min',
+        tags: ['chemistry','exothermic','catalysis'],
+        summary: 'Decompose hydrogen peroxide with yeast or KI to create a rapid foaming reaction.',
+        materials: [
+          'Hydrogen peroxide (3% household or 6–12% for stronger reaction)',
+          'Dish soap',
+          'Dry yeast + warm water (or potassium iodide as catalyst)',
+          'Food coloring',
+          'Tall cylinder or bottle, tray, gloves, goggles'
+        ],
+        safety: [
+          'Wear goggles and gloves; higher % peroxide is corrosive.',
+          'Use a tray to contain foam. Do not ingest.',
+          'Clean surfaces after—iodine may stain.'
+        ],
+        steps: [
+          'Add a generous squirt of dish soap and food coloring to the bottle.',
+          'Pour in hydrogen peroxide.',
+          'In a cup, activate yeast with warm water for ~5 minutes (or prepare KI solution).',
+          'Quickly add the catalyst and step back.'
+        ],
+        outcomes: {
+          baseline: 'A thick column of foam rapidly rises and spills over the container. The bottle warms due to the exothermic breakdown of H₂O₂ into water and oxygen.',
+          less: 'With less catalyst, bubbles form slowly and the foam rises modestly—noticeably less vigorous.',
+          more: 'With more catalyst, foaming is extremely fast and voluminous; heat is more noticeable. Ensure the tray can contain overflow.',
+          temp: 'Warmer conditions accelerate the reaction—foam climbs higher and faster than room temp.'
+        }
+      },
+      {
+        id: 'volcano',
+        name: 'Baking Soda & Vinegar Volcano',
+        level: 'Intro',
+        time: '8 min',
+        tags: ['acid–base','CO₂','chemistry'],
+        summary: 'Classic acid–base reaction that releases CO₂ gas and bubbly eruption.',
+        materials: ['Baking soda (sodium bicarbonate)','Vinegar (acetic acid)','Dish soap (optional for thicker foam)','Food coloring','Container or model volcano'],
+        safety: ['Generally safe; protect surfaces and eyes from splatter.'],
+        steps: [
+          'Add baking soda to your container (1–2 tbsp).',
+          'Optional: add a squirt of dish soap and color.',
+          'Pour in vinegar and observe.'
+        ],
+        outcomes: {
+          baseline: 'Fizzing starts immediately, producing CO₂ bubbles and a foamy overflow.',
+          less: 'With less vinegar, the eruption is shorter and may not overflow.',
+          more: 'With excess vinegar, more CO₂ forms quickly—a taller, longer-lasting foam.',
+          temp: 'Slightly warmer vinegar increases bubble production speed; effect is moderate.'
+        }
+      },
+      {
+        id: 'cabbage-ph',
+        name: 'Red Cabbage pH Indicator',
+        level: 'Intro',
+        time: '20 min',
+        tags: ['indicator','chemistry','color-change'],
+        summary: 'Extract anthocyanin dye from cabbage to test pH of household liquids.',
+        materials: ['Red cabbage leaves','Hot water & beaker/jar','Strainer','Clear cups','Test liquids (lemon juice, baking soda solution, soap)'],
+        safety: ['Handle hot water carefully; adult supervision recommended.'],
+        steps: [
+          'Steep chopped cabbage in hot water ~10 minutes; strain to obtain purple indicator.',
+          'Pour indicator into clear cups.',
+          'Add a small amount of each test liquid and observe colors.'
+        ],
+        outcomes: {
+          baseline: 'Acids turn the indicator pink/red; bases shift it to green/blue—neutrals remain purplish.',
+          less: 'Using very dilute test liquids leads to subtler color shifts—harder to distinguish.',
+          more: 'With more concentrated acids/bases, colors are vivid and distinct.',
+          temp: 'Warmer indicator slightly speeds mixing but color mapping remains the same.'
+        }
+      },
+      {
+        id: 'luminol',
+        name: 'Luminol Glow (Chemiluminescence)',
+        level: 'Advanced',
+        time: '15 min',
+        tags: ['chemistry','oxidation','glow'],
+        summary: 'Oxidize luminol in basic solution to produce a blue glow in the dark.',
+        materials: ['Luminol powder (lab-grade kit recommended)','Hydrogen peroxide','Sodium carbonate (basic solution)','Copper(II) or iron catalyst','Dark room, safety gear'],
+        safety: ['Use lab-grade instructions and PPE. Not a kitchen experiment. Avoid skin/eye contact.'],
+        steps: [
+          'Prepare a basic luminol solution as directed by the kit or protocol.',
+          'Add oxidizer and catalyst; turn off the lights.',
+          'Gently swirl to sustain the glow.'
+        ],
+        outcomes: {
+          baseline: 'Solution emits an eerie blue glow for several seconds to minutes as excited aminophthalate relaxes.',
+          less: 'With less oxidizer, the glow is dim and short-lived.',
+          more: 'With more oxidizer/catalyst, brightness spikes but fades faster due to quicker consumption.',
+          temp: 'Warmer solutions glow brighter initially but decay faster; cooler solutions glow longer but dimmer.'
+        }
+      },
+      {
+        id: 'mentos-soda',
+        name: 'Mentos & Diet Soda Geyser',
+        level: 'Intro (outdoors)',
+        time: '5 min',
+        tags: ['physical','CO₂','nucleation'],
+        summary: 'Mentos candies provide nucleation sites that rapidly release dissolved CO₂ from soda.',
+        materials: ['2 L bottle of diet soda','Roll of Mentos','Paper tube or dropper tool','Outdoor space'],
+        safety: ['Do this outdoors away from people/ceilings. Do not lean over the bottle.'],
+        steps: [
+          'Place the bottle on flat ground and remove the cap.',
+          'Quickly drop several Mentos into the bottle and move back.'
+        ],
+        outcomes: {
+          baseline: 'A tall fountain erupts as CO₂ rapidly escapes—height varies with soda temperature and number of Mentos.',
+          less: 'Fewer Mentos → fewer nucleation sites → shorter fountain.',
+          more: 'More Mentos increases surface area → higher fountain; too many may cause splash-back sooner.',
+          temp: 'Warmer soda releases CO₂ faster, creating a higher but shorter-lived geyser.'
+        }
+      }
+    ];
+
+    // ---- UI logic ----
+    const list = document.getElementById('list');
+    const q = document.getElementById('q');
+    const filters = document.getElementById('filters');
+    const count = document.getElementById('count');
+
+    const title = document.getElementById('title');
+    const badges = document.getElementById('badges');
+    const summary = document.getElementById('summary');
+    const materials = document.getElementById('materials');
+    const safety = document.getElementById('safety');
+    const steps = document.getElementById('steps');
+    const runBtn = document.getElementById('runBtn');
+    const result = document.getElementById('result');
+    const setting = document.getElementById('setting');
+    const share = document.getElementById('share');
+
+    const allTags = Array.from(new Set(experiments.flatMap(e => e.tags))).sort();
+    let activeTag = null;
+
+    // Build filter chips
+    function renderFilters(){
+      filters.innerHTML = '';
+      const all = document.createElement('button');
+      all.className = 'chip' + (activeTag===null ? ' active':'');
+      all.textContent = 'All';
+      all.onclick = () => { activeTag=null; renderList(); renderFilters(); };
+      filters.appendChild(all);
+
+      allTags.forEach(tag => {
+        const btn = document.createElement('button');
+        btn.className = 'chip' + (activeTag===tag ? ' active':'');
+        btn.textContent = tag;
+        btn.onclick = () => { activeTag = (activeTag===tag?null:tag); renderList(); renderFilters(); };
+        filters.appendChild(btn);
+      });
+    }
+
+    function expItemTemplate(e){
+      const el = document.createElement('div');
+      el.className = 'exp-item';
+      el.setAttribute('data-id', e.id);
+      el.innerHTML = `
+        <div>
+          <h4>${e.name}</h4>
+          <div class="meta">
+            <span>Level: ${e.level}</span>
+            <span>Time: ${e.time}</span>
+          </div>
+        </div>`;
+      el.onclick = () => selectExperiment(e.id, true);
+      return el;
+    }
+
+    function renderList(){
+      const search = q.value.trim().toLowerCase();
+      let items = experiments.filter(e => {
+        const matchesTag = !activeTag || e.tags.includes(activeTag);
+        const matchesQ = !search || [e.name, e.level, e.tags.join(' ')].join(' ').toLowerCase().includes(search);
+        return matchesTag && matchesQ;
+      });
+      list.innerHTML = '';
+      items.forEach(e => list.appendChild(expItemTemplate(e)));
+      count.textContent = `(${items.length})`;
+      // Highlight currently selected item
+      document.querySelectorAll('.exp-item').forEach(node => node.classList.toggle('active', node.getAttribute('data-id')===currentId));
+    }
+
+    function ulify(arr, target){
+      target.innerHTML = '';
+      arr.forEach(x => {
+        const li = document.createElement('li');
+        li.textContent = x; target.appendChild(li);
+      });
+    }
+
+    function olify(arr, target){
+      target.innerHTML = '';
+      arr.forEach(x => {
+        const li = document.createElement('li');
+        li.textContent = x; target.appendChild(li);
+      });
+    }
+
+    let currentId = null;
+
+    function selectExperiment(id, pushHash=false){
+      const e = experiments.find(x => x.id===id);
+      if(!e) return;
+      currentId = id;
+      title.textContent = e.name;
+      badges.innerHTML = '';
+      ;['Level: '+e.level, 'Time: '+e.time, ...e.tags].forEach(t => {
+        const b = document.createElement('span'); b.className = 'badge'; b.textContent = t; badges.appendChild(b);
+      });
+      summary.textContent = e.summary;
+      ulify(e.materials, materials);
+      ulify(e.safety, safety);
+      olify(e.steps, steps);
+      result.classList.remove('show');
+      result.innerHTML = '';
+      runBtn.disabled = false;
+      renderList();
+      if(pushHash) location.hash = id;
+    }
+
+    runBtn.addEventListener('click', () => {
+      if(!currentId) return;
+      const e = experiments.find(x => x.id===currentId);
+      const key = setting.value;
+      const text = e.outcomes[key] || e.outcomes.baseline;
+      result.innerHTML = `<strong>Result:</strong> ${text}`;
+      result.classList.add('show');
+    });
+
+    q.addEventListener('input', renderList);
+
+    share.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      if(!currentId){ navigator.clipboard.writeText(location.href); return; }
+      const url = location.origin + location.pathname + '#' + currentId;
+      navigator.clipboard.writeText(url).then(() => {
+        share.textContent = 'Link copied!';
+        setTimeout(()=> share.textContent='Copy link to this experiment', 1400);
+      });
+    });
+
+    // Deep-link support via #id
+    function initFromHash(){
+      const id = location.hash.replace('#','');
+      if(id){ selectExperiment(id); }
+    }
+
+    renderFilters();
+    renderList();
+    initFromHash();
+    window.addEventListener('hashchange', initFromHash);
+  </script>
+
+  <!--
+    ✅ How to use on GitHub Pages
+    1) Create a repo named: YOUR-USERNAME.github.io
+    2) Add this file as index.html at the repo root.
+    3) Commit & push. Your site will be live shortly at https://YOUR-USERNAME.github.io
+
+    🛠 Add your own experiments
+    - Duplicate an object in the experiments[] array and change fields.
+    - id must be unique; tags drive filter chips; outcomes keys should match the <select> options.
+    - All logic is client-side and works without any build tools.
+  -->
+</body>
+</html>
