@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.7">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="en"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta charset="UTF-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;title&gt;Element Test Sandbox&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>body { font-family: Arial, sans-serif; margin: 2em; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>select, button { margin: 0.5em; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>#result { margin-top: 1em; font-weight: bold; }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;h2&gt;Element Test Sandbox&lt;/h2&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;label&gt;Choose Element:</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;select id="elementSelect"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;option&gt;Hydrogen&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;option&gt;Oxygen&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;option&gt;Nitrogen&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;option&gt;Sodium&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;option&gt;Copper&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;option&gt;Iron&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/select&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/label&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;label&gt;Choose Test:</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;select id="testSelect"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;option value="flameTest"&gt;Flame Test&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;option value="solubilityTest"&gt;Solubility Test&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;option value="reactivityTest"&gt;Reactivity Test&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/select&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/label&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;button onclick="runTest()"&gt;Run Test&lt;/button&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;div id="result"&gt;&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const resultsDB = {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>Hydrogen: {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>flameTest: ["Pale blue flame", "Invisible flame"],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>solubilityTest: ["Highly soluble in water"],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>reactivityTest: ["Explodes with oxygen", "Forms water"]</p>
+<p class="p1"><span class="Apple-converted-space">      </span>},</p>
+<p class="p1"><span class="Apple-converted-space">      </span>Oxygen: {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>flameTest: ["No distinct color"],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>solubilityTest: ["Slightly soluble in water"],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>reactivityTest: ["Supports combustion"]</p>
+<p class="p1"><span class="Apple-converted-space">      </span>},</p>
+<p class="p1"><span class="Apple-converted-space">      </span>Nitrogen: {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>flameTest: ["No color flame"],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>solubilityTest: ["Low solubility"],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>reactivityTest: ["Generally inert"]</p>
+<p class="p1"><span class="Apple-converted-space">      </span>},</p>
+<p class="p1"><span class="Apple-converted-space">      </span>Sodium: {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>flameTest: ["Bright yellow flame"],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>solubilityTest: ["Soluble in water"],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>reactivityTest: ["Reacts violently with water"]</p>
+<p class="p1"><span class="Apple-converted-space">      </span>},</p>
+<p class="p1"><span class="Apple-converted-space">      </span>Copper: {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>flameTest: ["Green flame"],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>solubilityTest: ["Forms blue solution"],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>reactivityTest: ["Reacts with oxygen to form black oxide"]</p>
+<p class="p1"><span class="Apple-converted-space">      </span>},</p>
+<p class="p1"><span class="Apple-converted-space">      </span>Iron: {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>flameTest: ["Sparks in flame"],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>solubilityTest: ["Insoluble in water"],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>reactivityTest: ["Rusts slowly with oxygen"]</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>function runTest() {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const element = document.getElementById("elementSelect").value;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const test = document.getElementById("testSelect").value;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const possibleResults = resultsDB[element][test];</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const randomIndex = Math.floor(Math.random() * possibleResults.length);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const result = possibleResults[randomIndex];</p>
+<p class="p1"><span class="Apple-converted-space">      </span>document.getElementById("result").innerText =</p>
+<p class="p1"><span class="Apple-converted-space">        </span>`${element} (${test}): ${result}`;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/script&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
